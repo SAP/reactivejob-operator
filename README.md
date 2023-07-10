@@ -1,32 +1,64 @@
-# SAP Repository Template
+# Reactive Kubernetes Jobs
 
-Default templates for SAP open source repositories, including LICENSE, .reuse/dep5, Code of Conduct, etc... All repositories on github.com/SAP will be created based on this template.
-
-## To-Do
-
-In case you are the maintainer of a new SAP open source project, these are the steps to do with the template files:
-
-- Check if the default license (Apache 2.0) also applies to your project. A license change should only be required in exceptional cases. If this is the case, please change the [license file](LICENSE).
-- Enter the correct metadata for the REUSE tool. See our [wiki page](https://wiki.wdf.sap.corp/wiki/display/ospodocs/Using+the+Reuse+Tool+of+FSFE+for+Copyright+and+License+Information) for details how to do it. You can find an initial .reuse/dep5 file to build on. Please replace the parts inside the single angle quotation marks < > by the specific information for your repository and be sure to run the REUSE tool to validate that the metadata is correct.
-- Adjust the contribution guidelines (e.g. add coding style guidelines, pull request checklists, different license if needed etc.)
-- Add information about your project to this README (name, description, requirements etc). Especially take care for the <your-project> placeholders - those ones need to be replaced with your project name. See the sections below the horizontal line and [our guidelines on our wiki page](https://wiki.wdf.sap.corp/wiki/display/ospodocs/Guidelines+for+README.md+file) what is required and recommended.
-- Remove all content in this README above and including the horizontal line ;)
-
-***
-
-# Our new open source project
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/reactivejob-operator)](https://api.reuse.software/info/github.com/SAP/reactivejob-operator)
 
 ## About this project
 
-*Insert a short description of your project here...*
+It is a common approach in Kubernetes to realize certain ad-hoc tasks as Kubernetes jobs.
+However it is difficult to do this in a declarative way since Kubernetes job objects are more or less immutable.
+That is, after being created, they run to completion once (successfully or with failure).
+A natural expectation would be that the job's logic is re-run, whenever the job specification changes.
+But this is not how Kubernetes jobs are designed, any such changes to the job's spec will be rejected by Kubernetes.
+Workarounds for this problem are to create new jobs with new names again and again, or to delete and recreate the jobs (somehow making use of short job TTLs, or - when working with Helm - realizing jobs as Helm hooks).
+
+This repository proposes a better solution for the above problem, in form of a custom resource type `reactivejobs.batch.cs.sap.com` (kind: `ReactiveJob`),
+which basically wraps the builtin job resource (`jobs.batch`, kind `Job`), and re-triggers execution whenever the given job descriptor is changed.
+
+A typical `ReactiveJob` could look as follows:
+
+```yaml
+apiVersion: batch.cs.sap.com/v1alpha1
+kind: ReactiveJob
+metadata:
+  name: test
+spec:
+  jobTemplate:
+    metadata:
+      annotations:
+        digest: abc123
+    spec:
+      ttlSecondsAfterFinished: 120
+      template:
+        spec:
+          containers:
+          - name: main
+            image: alpine
+            command: ["sleep","10"]
+          restartPolicy: Never
+```
+
+Whenever the content under `spec.jobTemplate` changes, the controller provided by this repository will create a new `Job`, with a generated name, prefixed by the name of the `ReactiveJob`, such as `test-a7r3s`. The `ReactiveJob`'s status will reflect the status of the most recent dependent `Job`.
+
+Generated jobs will not be deleted by default, but this can of course by achieved by specifying `spec.jobTemplate.spec.ttlSecondsAfterFinished` accordingly.
+Note that this will only affect old jobs, the most recent job will never be deleted.
+
+Finally, note that the `ReactiveJob`'s status is compatible with [kstatus](https://github.com/kubernetes-sigs/cli-utils/tree/master/pkg/kstatus), so it can be used e.g. with [flux kustomizations](https://fluxcd.io/docs/components/kustomize/kustomization/).
 
 ## Requirements and Setup
 
-*Insert a short description what is required to get your project running...*
+The recommended deployment method is to use the [Helm chart](https://github.com/sap/reactivejob-operator-helm):
+
+```bash
+helm upgrade -i reactivejob-operator oci://ghcr.io/sap/reactivejob-operator-helm/reactivejob-operator
+```
+
+## Documentation
+ 
+The API reference is here: [https://pkg.go.dev/github.com/sap/reactivejob-operator](https://pkg.go.dev/github.com/sap/reactivejob-operator).
 
 ## Support, Feedback, Contributing
 
-This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/SAP/<your-project>/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
+This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/SAP/reactivejob-operator/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
 
 ## Code of Conduct
 
@@ -34,4 +66,4 @@ We as members, contributors, and leaders pledge to make participation in our com
 
 ## Licensing
 
-Copyright (20xx-)20xx SAP SE or an SAP affiliate company and <your-project> contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/SAP/<your-project>).
+Copyright 2023 SAP SE or an SAP affiliate company and reactivejob-operator contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/SAP/reactivejob-operator).

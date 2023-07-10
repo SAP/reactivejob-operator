@@ -1,0 +1,20 @@
+# permissions for end users to view reactivejobs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: reactivejob-viewer-role
+rules:
+- apiGroups:
+  - batch.cs.sap.com
+  resources:
+  - reactivejobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch.cs.sap.com
+  resources:
+  - reactivejobs/status
+  verbs:
+  - get

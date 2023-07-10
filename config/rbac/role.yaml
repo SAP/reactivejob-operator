@@ -1,0 +1,43 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch.cs.sap.com
+  resources:
+  - reactivejobs
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch.cs.sap.com
+  resources:
+  - reactivejobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - batch.cs.sap.com
+  resources:
+  - reactivejobs/status
+  verbs:
+  - get
+  - patch
+  - update

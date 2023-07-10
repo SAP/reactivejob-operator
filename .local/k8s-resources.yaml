@@ -1,0 +1,78 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reactivejob-operator-webhook
+  namespace: default
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 2443
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: reactivejob-operator-webhook
+  namespace: default
+subsets:
+- addresses:
+  - ip: ${HOST_IP}
+  ports:
+  - port: 2443
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: reactivejob-operator-webhook
+  namespace: default
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: reactivejob-operator-webhook
+  namespace: default
+spec:
+  dnsNames:
+  - reactivejob-operator-webhook
+  - reactivejob-operator-webhook.default
+  - reactivejob-operator-webhook.default.svc
+  - reactivejob-operator-webhook.default.svc.cluster.local
+  issuerRef:
+    name: reactivejob-operator-webhook
+  secretName: reactivejob-operator-webhook
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: reactivejob-operator-webhook
+  annotations:
+    cert-manager.io/inject-ca-from: default/reactivejob-operator-webhook
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: reactivejob-operator-webhook
+      namespace: default
+      path: /validate-batch-cs-sap-com-v1alpha1-reactivejob
+      port: 443
+  name: validate.reactivejobs.batch.cs.sap.com
+  rules:
+  - apiGroups:
+    - batch.cs.sap.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - reactivejobs
+    scope: Namespaced
+  matchPolicy: Equivalent
+  sideEffects: None
+  timeoutSeconds: 10
+  failurePolicy: Fail
