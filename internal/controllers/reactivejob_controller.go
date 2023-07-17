@@ -158,6 +158,7 @@ func (r *ReactiveJobReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 
 		job := jobs[0]
+		reactiveJob.Status.CurrentJobName = job.Name
 		state := batchv1alpha1.ReactiveJobStateProcessing
 		message := "waiting for job to complete"
 		requeueAfter := 10 * time.Second

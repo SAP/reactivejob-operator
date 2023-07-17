@@ -30,6 +30,10 @@ type ReactiveJobStatus struct {
 	// Readable form of the state.
 	// +optional
 	State ReactiveJobState `json:"state,omitempty"`
+
+	// Name of current job; that is, the name of the last job that was created for this ReactiveJob.
+	// +optional
+	CurrentJobName string `json:"currentJobName,omitempty"`
 }
 
 // ReactiveJobCondition contains condition information for a ReactiveJob.

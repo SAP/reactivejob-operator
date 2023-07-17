@@ -8619,6 +8619,10 @@ spec:
                   - type
                   type: object
                 type: array
+              currentJobName:
+                description: Name of current job; that is, the name of the last job
+                  that was created for this ReactiveJob.
+                type: string
               observedGeneration:
                 description: Observed generation.
                 format: int64
