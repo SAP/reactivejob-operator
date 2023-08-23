@@ -125,7 +125,7 @@ var _ = BeforeSuite(func() {
 				return
 			case <-time.After(100 * time.Millisecond):
 				jobList := &batchv1.JobList{}
-				err := cli.List(ctx, jobList)
+				err := cli.List(context.Background(), jobList)
 				Expect(err).NotTo(HaveOccurred())
 				for _, job := range jobList.Items {
 					if job.DeletionTimestamp.IsZero() {
@@ -140,14 +140,14 @@ var _ = BeforeSuite(func() {
 						if reflect.DeepEqual(status, oldStatus) {
 							continue
 						}
-						err = cli.Status().Update(ctx, &job)
+						err = cli.Status().Update(context.Background(), &job)
 						if apierrors.IsNotFound(err) || apierrors.IsConflict(err) {
 							err = nil
 						}
 						Expect(err).NotTo(HaveOccurred())
 					} else {
 						if controllerutil.RemoveFinalizer(&job, metav1.FinalizerDeleteDependents) {
-							err = cli.Update(ctx, &job)
+							err = cli.Update(context.Background(), &job)
 							if apierrors.IsNotFound(err) || apierrors.IsConflict(err) {
 								err = nil
 							}
