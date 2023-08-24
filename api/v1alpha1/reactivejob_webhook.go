@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 var reactivejoblog = logf.Log.WithName("reactivejob-resource")
@@ -40,19 +41,19 @@ func (r *ReactiveJob) Default() {
 
 var _ webhook.Validator = &ReactiveJob{}
 
-func (r *ReactiveJob) ValidateCreate() error {
+func (r *ReactiveJob) ValidateCreate() (admission.Warnings, error) {
 	reactivejoblog.Info("validate create", "name", r.Name)
-	return r.validate()
+	return nil, r.validate()
 }
 
-func (r *ReactiveJob) ValidateUpdate(old runtime.Object) error {
+func (r *ReactiveJob) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	reactivejoblog.Info("validate update", "name", r.Name)
-	return r.validate()
+	return nil, r.validate()
 }
 
-func (r *ReactiveJob) ValidateDelete() error {
+func (r *ReactiveJob) ValidateDelete() (admission.Warnings, error) {
 	reactivejoblog.Info("validate delete", "name", r.Name)
-	return nil
+	return nil, nil
 }
 
 func (r *ReactiveJob) validate() error {

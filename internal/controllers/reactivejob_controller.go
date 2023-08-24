@@ -28,7 +28,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 )
@@ -217,7 +216,7 @@ func (r *ReactiveJobReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 }
 
-func jobEnqueueMapper(obj client.Object) []reconcile.Request {
+func jobEnqueueMapper(ctx context.Context, obj client.Object) []reconcile.Request {
 	return []reconcile.Request{
 		{
 			NamespacedName: types.NamespacedName{
@@ -236,6 +235,6 @@ func (r *ReactiveJobReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&batchv1alpha1.ReactiveJob{}, builder.WithPredicates(reactiveJobPredicate)).
-		Watches(&source.Kind{Type: &batchv1.Job{}}, handler.EnqueueRequestsFromMapFunc(jobEnqueueMapper), builder.WithPredicates(jobPredicate)).
+		Watches(&batchv1.Job{}, handler.EnqueueRequestsFromMapFunc(jobEnqueueMapper), builder.WithPredicates(jobPredicate)).
 		Complete(r)
 }

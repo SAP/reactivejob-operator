@@ -37,6 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 	"github.com/sap/reactivejob-operator/internal/controllers"
@@ -95,13 +97,25 @@ var _ = BeforeSuite(func() {
 
 	By("creating manager")
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     "0",
+		Scheme: scheme,
+		Client: client.Options{
+			Cache: &client.CacheOptions{
+				DisableFor: []client.Object{
+					&batchv1alpha1.ReactiveJob{},
+					&batchv1.Job{},
+				},
+			},
+		},
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Host:    webhookInstallOptions.LocalServingHost,
+			Port:    webhookInstallOptions.LocalServingPort,
+			CertDir: webhookInstallOptions.LocalServingCertDir,
+		}),
+		Metrics: metricsserver.Options{
+			BindAddress: "0",
+		},
 		HealthProbeBindAddress: "0",
-		Host:                   webhookInstallOptions.LocalServingHost,
-		Port:                   webhookInstallOptions.LocalServingPort,
-		CertDir:                webhookInstallOptions.LocalServingCertDir,
-		ClientDisableCacheFor:  []client.Object{&batchv1alpha1.ReactiveJob{}}})
+	})
 	Expect(err).NotTo(HaveOccurred())
 
 	err = (&controllers.ReactiveJobReconciler{

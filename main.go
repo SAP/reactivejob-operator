@@ -19,6 +19,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 	"github.com/sap/reactivejob-operator/internal/controllers"
@@ -68,18 +70,26 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
-		ClientDisableCacheFor: []client.Object{
-			&batchv1alpha1.ReactiveJob{},
-			&batchv1.Job{},
+		Client: client.Options{
+			Cache: &client.CacheOptions{
+				DisableFor: []client.Object{
+					&batchv1alpha1.ReactiveJob{},
+					&batchv1.Job{},
+				},
+			},
 		},
-		MetricsBindAddress:            metricsAddr,
-		HealthProbeBindAddress:        probeAddr,
-		Host:                          webhookHost,
-		Port:                          webhookPort,
-		CertDir:                       webhookCertDir,
 		LeaderElection:                enableLeaderElection,
 		LeaderElectionID:              LeaderElectionID,
 		LeaderElectionReleaseOnCancel: true,
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Host:    webhookHost,
+			Port:    webhookPort,
+			CertDir: webhookCertDir,
+		}),
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
+		HealthProbeBindAddress: probeAddr,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
