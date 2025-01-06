@@ -1,5 +1,5 @@
 /*
-SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and reactivejob-operator contributors
+SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and reactivejob-operator contributors
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -8,81 +8,52 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/tools/cache"
+	batchcssapcomv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
-// ReactiveJobLister helps list ReactiveJobs.
+// ReactiveJobLister helps list Reactivejobs.
 // All objects returned here must be treated as read-only.
 type ReactiveJobLister interface {
-	// List lists all ReactiveJobs in the indexer.
+	// List lists all Reactivejobs in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.ReactiveJob, err error)
-	// ReactiveJobs returns an object that can list and get ReactiveJobs.
-	ReactiveJobs(namespace string) ReactiveJobNamespaceLister
+	List(selector labels.Selector) (ret []*batchcssapcomv1alpha1.ReactiveJob, err error)
+	// Reactivejobs returns an object that can list and get Reactivejobs.
+	Reactivejobs(namespace string) ReactiveJobNamespaceLister
 	ReactiveJobListerExpansion
 }
 
 // reactiveJobLister implements the ReactiveJobLister interface.
 type reactiveJobLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*batchcssapcomv1alpha1.ReactiveJob]
 }
 
 // NewReactiveJobLister returns a new ReactiveJobLister.
 func NewReactiveJobLister(indexer cache.Indexer) ReactiveJobLister {
-	return &reactiveJobLister{indexer: indexer}
+	return &reactiveJobLister{listers.New[*batchcssapcomv1alpha1.ReactiveJob](indexer, batchcssapcomv1alpha1.Resource("reactivejob"))}
 }
 
-// List lists all ReactiveJobs in the indexer.
-func (s *reactiveJobLister) List(selector labels.Selector) (ret []*v1alpha1.ReactiveJob, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.ReactiveJob))
-	})
-	return ret, err
+// Reactivejobs returns an object that can list and get Reactivejobs.
+func (s *reactiveJobLister) Reactivejobs(namespace string) ReactiveJobNamespaceLister {
+	return reactiveJobNamespaceLister{listers.NewNamespaced[*batchcssapcomv1alpha1.ReactiveJob](s.ResourceIndexer, namespace)}
 }
 
-// ReactiveJobs returns an object that can list and get ReactiveJobs.
-func (s *reactiveJobLister) ReactiveJobs(namespace string) ReactiveJobNamespaceLister {
-	return reactiveJobNamespaceLister{indexer: s.indexer, namespace: namespace}
-}
-
-// ReactiveJobNamespaceLister helps list and get ReactiveJobs.
+// ReactiveJobNamespaceLister helps list and get Reactivejobs.
 // All objects returned here must be treated as read-only.
 type ReactiveJobNamespaceLister interface {
-	// List lists all ReactiveJobs in the indexer for a given namespace.
+	// List lists all Reactivejobs in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.ReactiveJob, err error)
+	List(selector labels.Selector) (ret []*batchcssapcomv1alpha1.ReactiveJob, err error)
 	// Get retrieves the ReactiveJob from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.ReactiveJob, error)
+	Get(name string) (*batchcssapcomv1alpha1.ReactiveJob, error)
 	ReactiveJobNamespaceListerExpansion
 }
 
 // reactiveJobNamespaceLister implements the ReactiveJobNamespaceLister
 // interface.
 type reactiveJobNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all ReactiveJobs in the indexer for a given namespace.
-func (s reactiveJobNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.ReactiveJob, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.ReactiveJob))
-	})
-	return ret, err
-}
-
-// Get retrieves the ReactiveJob from the indexer for a given namespace and name.
-func (s reactiveJobNamespaceLister) Get(name string) (*v1alpha1.ReactiveJob, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("reactivejob"), name)
-	}
-	return obj.(*v1alpha1.ReactiveJob), nil
+	listers.ResourceIndexer[*batchcssapcomv1alpha1.ReactiveJob]
 }

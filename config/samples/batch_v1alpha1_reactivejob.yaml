@@ -1,6 +1,0 @@
-apiVersion: batch.cs.sap.com/v1alpha1
-kind: ReactiveJob
-metadata:
-  name: reactivejob-sample
-spec:
-  # TODO(user): Add fields here

@@ -1,5 +1,5 @@
 /*
-SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and reactivejob-operator contributors
+SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and reactivejob-operator contributors
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package externalversions
 
 import (
-	"fmt"
+	fmt "fmt"
 
 	v1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -43,7 +43,7 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	switch resource {
 	// Group=batch.cs.sap.com, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("reactivejobs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Batch().V1alpha1().ReactiveJobs().Informer()}, nil
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Batch().V1alpha1().Reactivejobs().Informer()}, nil
 
 	}
 

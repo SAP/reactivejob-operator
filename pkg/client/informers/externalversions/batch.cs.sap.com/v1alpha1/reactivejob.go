@@ -1,5 +1,5 @@
 /*
-SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and reactivejob-operator contributors
+SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and reactivejob-operator contributors
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -8,13 +8,13 @@ SPDX-License-Identifier: Apache-2.0
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
-	batchcssapcomv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
+	apisbatchcssapcomv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 	versioned "github.com/sap/reactivejob-operator/pkg/client/clientset/versioned"
 	internalinterfaces "github.com/sap/reactivejob-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/sap/reactivejob-operator/pkg/client/listers/batch.cs.sap.com/v1alpha1"
+	batchcssapcomv1alpha1 "github.com/sap/reactivejob-operator/pkg/client/listers/batch.cs.sap.com/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -22,10 +22,10 @@ import (
 )
 
 // ReactiveJobInformer provides access to a shared informer and lister for
-// ReactiveJobs.
+// Reactivejobs.
 type ReactiveJobInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.ReactiveJobLister
+	Lister() batchcssapcomv1alpha1.ReactiveJobLister
 }
 
 type reactiveJobInformer struct {
@@ -51,16 +51,16 @@ func NewFilteredReactiveJobInformer(client versioned.Interface, namespace string
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BatchV1alpha1().ReactiveJobs(namespace).List(context.TODO(), options)
+				return client.BatchV1alpha1().Reactivejobs(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BatchV1alpha1().ReactiveJobs(namespace).Watch(context.TODO(), options)
+				return client.BatchV1alpha1().Reactivejobs(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&batchcssapcomv1alpha1.ReactiveJob{},
+		&apisbatchcssapcomv1alpha1.ReactiveJob{},
 		resyncPeriod,
 		indexers,
 	)
@@ -71,9 +71,9 @@ func (f *reactiveJobInformer) defaultInformer(client versioned.Interface, resync
 }
 
 func (f *reactiveJobInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&batchcssapcomv1alpha1.ReactiveJob{}, f.defaultInformer)
+	return f.factory.InformerFor(&apisbatchcssapcomv1alpha1.ReactiveJob{}, f.defaultInformer)
 }
 
-func (f *reactiveJobInformer) Lister() v1alpha1.ReactiveJobLister {
-	return v1alpha1.NewReactiveJobLister(f.Informer().GetIndexer())
+func (f *reactiveJobInformer) Lister() batchcssapcomv1alpha1.ReactiveJobLister {
+	return batchcssapcomv1alpha1.NewReactiveJobLister(f.Informer().GetIndexer())
 }

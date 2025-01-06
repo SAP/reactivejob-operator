@@ -1,5 +1,5 @@
 /*
-SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and reactivejob-operator contributors
+SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and reactivejob-operator contributors
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -13,8 +13,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// ReactiveJobs returns a ReactiveJobInformer.
-	ReactiveJobs() ReactiveJobInformer
+	// Reactivejobs returns a ReactiveJobInformer.
+	Reactivejobs() ReactiveJobInformer
 }
 
 type version struct {
@@ -28,7 +28,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// ReactiveJobs returns a ReactiveJobInformer.
-func (v *version) ReactiveJobs() ReactiveJobInformer {
+// Reactivejobs returns a ReactiveJobInformer.
+func (v *version) Reactivejobs() ReactiveJobInformer {
 	return &reactiveJobInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

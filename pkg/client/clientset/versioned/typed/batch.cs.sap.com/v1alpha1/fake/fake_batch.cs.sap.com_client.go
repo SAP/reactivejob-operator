@@ -1,5 +1,5 @@
 /*
-SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and reactivejob-operator contributors
+SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and reactivejob-operator contributors
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -17,8 +17,8 @@ type FakeBatchV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeBatchV1alpha1) ReactiveJobs(namespace string) v1alpha1.ReactiveJobInterface {
-	return &FakeReactiveJobs{c, namespace}
+func (c *FakeBatchV1alpha1) Reactivejobs(namespace string) v1alpha1.ReactiveJobInterface {
+	return newFakeReactivejobs(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate
