@@ -42,6 +42,7 @@ import (
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 	"github.com/sap/reactivejob-operator/internal/controllers"
+	"github.com/sap/reactivejob-operator/internal/webhooks"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -124,7 +125,10 @@ var _ = BeforeSuite(func() {
 	}).SetupWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&batchv1alpha1.ReactiveJob{}).SetupWebhookWithManager(mgr)
+	err = (&webhooks.ReactiveJobWebhook{
+		Client: mgr.GetClient(),
+		Log:    mgr.GetLogger().WithName("reactivejob-webhook"),
+	}).SetupWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
 	By("starting dummy controller-manager")
