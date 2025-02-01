@@ -24,6 +24,7 @@ import (
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
 	"github.com/sap/reactivejob-operator/internal/controllers"
+	"github.com/sap/reactivejob-operator/internal/webhooks"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -103,10 +104,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "ReactiveJob")
 		os.Exit(1)
 	}
-	if err = (&batchv1alpha1.ReactiveJob{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&webhooks.ReactiveJobWebhook{
+		Client: mgr.GetClient(),
+		Log:    mgr.GetLogger().WithName("reactivejob-webhook"),
+	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "ReactiveJob")
 		os.Exit(1)
 	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
+	"github.com/sap/reactivejob-operator/internal/webhooks"
 )
 
 const (
@@ -68,7 +69,7 @@ func (r *ReactiveJobReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Call the defaulting webhook logic also here (because defaulting through the webhook might be incomplete in case of generateName usage)
-	reactiveJob.Default()
+	(&webhooks.ReactiveJobWebhook{Client: r.Client, Log: log}).Default(ctx, reactiveJob)
 
 	// Acknowledge observed generation
 	reactiveJob.Status.ObservedGeneration = reactiveJob.Generation
