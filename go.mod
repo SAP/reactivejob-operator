@@ -3,7 +3,7 @@ module github.com/sap/reactivejob-operator
 go 1.23.4
 
 require (
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo/v2 v2.22.1
 	github.com/onsi/gomega v1.36.2
@@ -14,7 +14,7 @@ require (
 	k8s.io/client-go v0.32.0
 	k8s.io/code-generator v0.32.0
 	sigs.k8s.io/controller-runtime v0.20.1
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250103111815-1ac370e560b1
+	sigs.k8s.io/controller-runtime/tools/setup-envtest 157e6d282d89
 	sigs.k8s.io/controller-tools v0.17.0
 )
 
