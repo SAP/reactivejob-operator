@@ -13,10 +13,8 @@ import (
 	"github.com/go-logr/logr"
 
 	batchv1 "k8s.io/api/batch/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	batchv1alpha1 "github.com/sap/reactivejob-operator/api/v1alpha1"
@@ -30,29 +28,25 @@ type ReactiveJobWebhook struct {
 	Log    logr.Logger
 }
 
-var _ webhook.CustomValidator = &ReactiveJobWebhook{}
-var _ webhook.CustomDefaulter = &ReactiveJobWebhook{}
+var _ admission.Validator[*batchv1alpha1.ReactiveJob] = &ReactiveJobWebhook{}
+var _ admission.Defaulter[*batchv1alpha1.ReactiveJob] = &ReactiveJobWebhook{}
 
-func (w *ReactiveJobWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	r := obj.(*batchv1alpha1.ReactiveJob)
+func (w *ReactiveJobWebhook) ValidateCreate(ctx context.Context, r *batchv1alpha1.ReactiveJob) (admission.Warnings, error) {
 	w.Log.Info("validate create", "name", r.Name)
 	return nil, w.validate(r)
 }
 
-func (w *ReactiveJobWebhook) ValidateUpdate(tx context.Context, oldObj runtime.Object, newObj runtime.Object) (admission.Warnings, error) {
-	r := newObj.(*batchv1alpha1.ReactiveJob)
-	w.Log.Info("validate update", "name", r.Name)
-	return nil, w.validate(r)
+func (w *ReactiveJobWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj *batchv1alpha1.ReactiveJob) (admission.Warnings, error) {
+	w.Log.Info("validate update", "name", newObj.Name)
+	return nil, w.validate(newObj)
 }
 
-func (w *ReactiveJobWebhook) ValidateDelete(tx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	r := obj.(*batchv1alpha1.ReactiveJob)
+func (w *ReactiveJobWebhook) ValidateDelete(ctx context.Context, r *batchv1alpha1.ReactiveJob) (admission.Warnings, error) {
 	w.Log.Info("validate delete", "name", r.Name)
 	return nil, nil
 }
 
-func (w *ReactiveJobWebhook) Default(tx context.Context, obj runtime.Object) error {
-	r := obj.(*batchv1alpha1.ReactiveJob)
+func (w *ReactiveJobWebhook) Default(ctx context.Context, r *batchv1alpha1.ReactiveJob) error {
 	w.Log.Info("default", "name", r.Name)
 	return nil
 }
@@ -88,8 +82,7 @@ func (w *ReactiveJobWebhook) validate(r *batchv1alpha1.ReactiveJob) error {
 }
 
 func (w *ReactiveJobWebhook) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(&batchv1alpha1.ReactiveJob{}).
+	return ctrl.NewWebhookManagedBy(mgr, &batchv1alpha1.ReactiveJob{}).
 		WithValidator(w).
 		WithDefaulter(w).
 		Complete()
