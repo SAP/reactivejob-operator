@@ -18,7 +18,7 @@ import (
 )
 
 type Interface interface {
-	Discovery() discovery.DiscoveryInterface
+	Discovery() discovery.DiscoveryInterfaces
 	BatchV1alpha1() batchv1alpha1.BatchV1alpha1Interface
 }
 
@@ -34,7 +34,7 @@ func (c *Clientset) BatchV1alpha1() batchv1alpha1.BatchV1alpha1Interface {
 }
 
 // Discovery retrieves the DiscoveryClient
-func (c *Clientset) Discovery() discovery.DiscoveryInterface {
+func (c *Clientset) Discovery() discovery.DiscoveryInterfaces {
 	if c == nil {
 		return nil
 	}

@@ -23,11 +23,39 @@ import (
 )
 
 // ReactiveJobInformer provides access to a shared informer and lister for
-// Reactivejobs.
+// Reactivejobs. Prefer using the type-safe variant (see [TypedReactiveJobInformer]).
 type ReactiveJobInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() batchcssapcomv1alpha1.ReactiveJobLister
 }
+
+// TypedReactiveJobInformer provides access to a shared informer and lister for
+// Reactivejobs, including the type-safe TypedInformer variant.
+// It is a superset of ReactiveJobInformer.
+type TypedReactiveJobInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() ReactiveJobIndexInformer
+	Lister() batchcssapcomv1alpha1.ReactiveJobLister
+}
+
+// ReactiveJobIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type ReactiveJobIndexInformer cache.TypedSharedIndexInformer[*apisbatchcssapcomv1alpha1.ReactiveJob]
+
+// ReactiveJobHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for ReactiveJob.
+type ReactiveJobHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*apisbatchcssapcomv1alpha1.ReactiveJob]
+
+// ReactiveJobDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for ReactiveJob.
+type ReactiveJobDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*apisbatchcssapcomv1alpha1.ReactiveJob]
+
+// ReactiveJobFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for ReactiveJob.
+type ReactiveJobFilteringHandler = cache.TypedFilteringResourceEventHandler[*apisbatchcssapcomv1alpha1.ReactiveJob]
+
+// ReactiveJobIndexers is a specialization of [cache.TypedIndexers] for ReactiveJob.
+type ReactiveJobIndexers = cache.TypedIndexers[*apisbatchcssapcomv1alpha1.ReactiveJob]
+
+// DeletedReactiveJob is a specialization of [cache.DeletedObject] for ReactiveJob.
+type DeletedReactiveJob = cache.DeletedObject[*apisbatchcssapcomv1alpha1.ReactiveJob]
 
 type reactiveJobInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -38,25 +66,49 @@ type reactiveJobInformer struct {
 // NewReactiveJobInformer constructs a new informer for ReactiveJob type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedReactiveJobInformer]).
 func NewReactiveJobInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewReactiveJobInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedReactiveJobInformer constructs a new informer for ReactiveJob type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedReactiveJobInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ReactiveJobIndexers) ReactiveJobIndexInformer {
+	return NewTypedReactiveJobInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredReactiveJobInformer constructs a new informer for ReactiveJob type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredReactiveJobInformer]).
 func NewFilteredReactiveJobInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewReactiveJobInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedReactiveJobInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredReactiveJobInformer constructs a new informer for ReactiveJob type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredReactiveJobInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ReactiveJobIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) ReactiveJobIndexInformer {
+	return NewTypedReactiveJobInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewReactiveJobInformerWithOptions constructs a new informer for ReactiveJob type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedReactiveJobInformerWithOptions]).
 func NewReactiveJobInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedReactiveJobInformerWithOptions(client, namespace, options)
+}
+
+// NewTypedReactiveJobInformerWithOptions constructs a new informer for ReactiveJob type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedReactiveJobInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) ReactiveJobIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "batch.cs.sap.com", Version: "v1alpha1", Resource: "reactivejobs"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*apisbatchcssapcomv1alpha1.ReactiveJob](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -89,17 +141,57 @@ func NewReactiveJobInformerWithOptions(client versioned.Interface, namespace str
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *reactiveJobInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewReactiveJobInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedReactiveJobInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *reactiveJobInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apisbatchcssapcomv1alpha1.ReactiveJob{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *reactiveJobInformer) TypedInformer() ReactiveJobIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apisbatchcssapcomv1alpha1.ReactiveJob](f.factory.InformerFor(&apisbatchcssapcomv1alpha1.ReactiveJob{}, f.defaultInformer))
 }
 
 func (f *reactiveJobInformer) Lister() batchcssapcomv1alpha1.ReactiveJobLister {
 	return batchcssapcomv1alpha1.NewReactiveJobLister(f.Informer().GetIndexer())
+}
+
+// ToTypedReactiveJobInformer converts an untyped informer into a TypedReactiveJobInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ReactiveJob. If that is not the case, calling type-safe methods of the returned
+// TypedReactiveJobInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedReactiveJobInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedReactiveJobInformer(informer ReactiveJobInformer) TypedReactiveJobInformer {
+	if informer, ok := informer.(TypedReactiveJobInformer); ok {
+		return informer
+	}
+	return &reactiveJobTypedInformerAdapter{informer}
+}
+
+type reactiveJobTypedInformerAdapter struct {
+	ReactiveJobInformer
+}
+
+func (a *reactiveJobTypedInformerAdapter) TypedInformer() ReactiveJobIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apisbatchcssapcomv1alpha1.ReactiveJob](a.Informer())
+}
+
+// ToReactiveJobIndexInformer converts an untyped informer into a ReactiveJobIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ReactiveJob. If that is not the case, calling type-safe methods of the returned
+// ReactiveJobIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a ReactiveJobIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToReactiveJobIndexInformer(informer cache.SharedIndexInformer) ReactiveJobIndexInformer {
+	if informer, ok := informer.(ReactiveJobIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*apisbatchcssapcomv1alpha1.ReactiveJob](informer)
 }
