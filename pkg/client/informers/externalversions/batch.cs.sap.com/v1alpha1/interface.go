@@ -14,7 +14,7 @@ import (
 // Interface provides access to all the informers in this group version.
 type Interface interface {
 	// Reactivejobs returns a ReactiveJobInformer.
-	Reactivejobs() ReactiveJobInformer
+	Reactivejobs() TypedReactiveJobInformer
 }
 
 type version struct {
@@ -28,7 +28,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// Reactivejobs returns a ReactiveJobInformer.
-func (v *version) Reactivejobs() ReactiveJobInformer {
+// Reactivejobs returns a TypedReactiveJobInformer.
+func (v *version) Reactivejobs() TypedReactiveJobInformer {
 	return &reactiveJobInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
